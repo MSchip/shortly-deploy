@@ -3,6 +3,12 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      dist: {
+        src: [
+        'public/client/*.js'
+        ],
+        dest: 'public/dist/production.js'
+      }
     },
 
     mochaTest: {
@@ -21,14 +27,19 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      build:{
+        src: 'public/dist/production.js',
+        dest: 'public/dist/production.min.js'
+      }
     },
 
     jshint: {
       files: [
         // Add filespec list here
+        'public/client/*.js'
       ],
       options: {
-        force: 'true',
+        force: 'false',
         jshintrc: '.jshintrc',
         ignores: [
           'public/lib/**/*.js',
@@ -38,6 +49,13 @@ module.exports = function(grunt) {
     },
 
     cssmin: {
+      minify: {
+        expand: true,
+        cwd: 'public/',
+        src: ['*.css', '!*.min.css'],
+        dest: 'public/dist/',
+        ext: '.min.css'
+      }
     },
 
     watch: {
@@ -59,6 +77,7 @@ module.exports = function(grunt) {
 
     shell: {
       prodServer: {
+        command: 'git push azure master'
       }
     },
   });
@@ -89,6 +108,12 @@ module.exports = function(grunt) {
   // Main grunt tasks
   ////////////////////////////////////////////////////
 
+  grunt.registerTask('default', [
+                     'concat', 
+                     'uglify',
+                     'cssmin'
+                     ]);
+
   grunt.registerTask('test', [
     'mochaTest'
   ]);
@@ -99,6 +124,7 @@ module.exports = function(grunt) {
   grunt.registerTask('upload', function(n) {
     if(grunt.option('prod')) {
       // add your production server task here
+      grunt.task.run([ 'shell' ]);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
@@ -106,6 +132,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('deploy', [
     // add your deploy tasks here
+                     'jshint',
+                     'concat', 
+                     'uglify',
+                     'cssmin'
   ]);
 
 
